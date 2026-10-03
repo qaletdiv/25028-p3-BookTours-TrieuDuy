@@ -1,0 +1,65 @@
+import { useState } from "react";
+import { Facebook, Instagram, Mail, MapPin, Menu, Phone, X } from "lucide-react";
+import { Link, NavLink, Outlet } from "react-router-dom";
+
+const navItems = [
+  { label: "Trang chủ", to: "/" },
+  { label: "Tour trong nước", to: "/tours?region=domestic" },
+  { label: "Tour nước ngoài", to: "/tours?region=international" },
+  { label: "Liên hệ", to: "/#contact" },
+];
+
+export default function Layout() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <div className="site-shell">
+      <div className="topbar">
+        <div className="container topbar-inner">
+          <span><Phone size={14} /> 1900 636 832</span>
+          <span><Mail size={14} /> hello@booktours.vn</span>
+          <span className="topbar-note">Tư vấn miễn phí 08:00 – 22:00</span>
+        </div>
+      </div>
+
+      <header className="header">
+        <div className="container header-inner">
+          <Link className="brand" to="/" onClick={() => setMenuOpen(false)}>
+            <span className="brand-mark">B</span>
+            <span>Book<span>Tours</span></span>
+          </Link>
+          <button className="menu-button" aria-label="Mở menu" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X /> : <Menu />}
+          </button>
+          <nav className={menuOpen ? "nav open" : "nav"}>
+            {navItems.map((item) => (
+              <NavLink key={item.label} to={item.to} onClick={() => setMenuOpen(false)}>
+                {item.label}
+              </NavLink>
+            ))}
+            <div className="auth-actions">
+              <Link className="login-link" to="/dang-nhap">Đăng nhập</Link>
+              <Link className="button button-sm" to="/dang-ky">Đăng ký</Link>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      <main><Outlet /></main>
+
+      <footer className="footer" id="contact">
+        <div className="container footer-grid">
+          <div>
+            <Link className="brand brand-light" to="/"><span className="brand-mark">B</span><span>Book<span>Tours</span></span></Link>
+            <p>Đồng hành cùng bạn trên mọi hành trình, mang đến những trải nghiệm đáng nhớ với dịch vụ tận tâm.</p>
+            <div className="socials"><a href="#facebook" aria-label="Facebook"><Facebook /></a><a href="#instagram" aria-label="Instagram"><Instagram /></a></div>
+          </div>
+          <div><h4>Khám phá</h4><Link to="/tours?region=domestic">Tour trong nước</Link><Link to="/tours?region=international">Tour nước ngoài</Link><Link to="/tours?sort=price_asc">Tour ưu đãi</Link></div>
+          <div><h4>Hỗ trợ</h4><a href="#guide">Hướng dẫn đặt tour</a><a href="#policy">Chính sách bảo mật</a><a href="#terms">Điều khoản sử dụng</a></div>
+          <div><h4>Liên hệ</h4><p><MapPin size={17} /> 123 Nguyễn Huệ, Quận 1, TP.HCM</p><p><Phone size={17} /> 1900 636 832</p><p><Mail size={17} /> hello@booktours.vn</p></div>
+        </div>
+        <div className="container copyright">© 2026 BookTours. All rights reserved.</div>
+      </footer>
+    </div>
+  );
+}
