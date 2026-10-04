@@ -2,6 +2,8 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import errorHandler from "./middlewares/errorHandler.js";
+import notFoundHandler from "./middlewares/notFoundHandler.js";
 import toursRouter from "./routes/tours.js";
 
 const app = express();
@@ -21,18 +23,7 @@ app.get("/api/health", (_req, res) => {
 });
 app.use("/api/tours", toursRouter);
 
-app.use((_req, res) => {
-  res.status(404).json({ message: "Không tìm thấy API." });
-});
-
-app.use((error, _req, res, _next) => {
-  console.error(error);
-  res.status(500).json({
-    message:
-      process.env.NODE_ENV === "production"
-        ? "Hệ thống đang bận, vui lòng thử lại."
-        : error.message,
-  });
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;

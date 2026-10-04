@@ -2,6 +2,21 @@
 
 Website đặt tour du lịch gồm frontend React/Vite và REST API Express.js kết nối MySQL.
 
+## Cấu trúc backend
+
+Backend được tổ chức theo luồng:
+
+```text
+routes → validators → controllers → services → models → MySQL
+```
+
+- `routes`: khai báo endpoint và gắn middleware.
+- `validators`: kiểm tra dữ liệu đầu vào bằng `express-validator`.
+- `controllers`: nhận request, gọi service và trả response.
+- `services`: xử lý nghiệp vụ và định dạng dữ liệu.
+- `models`: thực hiện truy vấn MySQL.
+- `middlewares`: xử lý validation, API không tồn tại và lỗi tập trung.
+
 ## Chức năng hiện có
 
 - A.1: Trang chủ có banner slider, tìm kiếm nhanh, tour nổi bật/trong nước/nước ngoài và popup theo phiên.
