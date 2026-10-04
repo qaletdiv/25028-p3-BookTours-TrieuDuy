@@ -12,6 +12,7 @@ async function request(path) {
 export const toursApi = {
   getHome: () => request("/tours/home"),
   getFilters: () => request("/tours/filters"),
+  getSuggestions: (keyword) => request(`/tours/suggestions?q=${encodeURIComponent(keyword)}`),
   getTours: (searchParams) => request(`/tours?${searchParams.toString()}`),
   getTour: (slug) => request(`/tours/${slug}`),
 };

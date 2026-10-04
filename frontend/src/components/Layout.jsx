@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Facebook, Instagram, Mail, MapPin, Menu, Phone, X } from "lucide-react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 const navItems = [
   { label: "Trang chủ", to: "/" },
@@ -11,6 +11,15 @@ const navItems = [
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+
+  function isNavActive(to) {
+    if (to === "/") return location.pathname === "/";
+    if (to.includes("region=domestic")) return location.pathname === "/tours" && new URLSearchParams(location.search).get("region") === "domestic";
+    if (to.includes("region=international")) return location.pathname === "/tours" && new URLSearchParams(location.search).get("region") === "international";
+    if (to.includes("#contact")) return location.hash === "#contact";
+    return false;
+  }
 
   return (
     <div className="site-shell">
@@ -33,9 +42,9 @@ export default function Layout() {
           </button>
           <nav className={menuOpen ? "nav open" : "nav"}>
             {navItems.map((item) => (
-              <NavLink key={item.label} to={item.to} onClick={() => setMenuOpen(false)}>
+              <Link className={isNavActive(item.to) ? "active" : ""} key={item.label} to={item.to} onClick={() => setMenuOpen(false)}>
                 {item.label}
-              </NavLink>
+              </Link>
             ))}
             <div className="auth-actions">
               <Link className="login-link" to="/dang-nhap">Đăng nhập</Link>

@@ -28,3 +28,13 @@ export async function findTourTypes() {
   );
   return rows;
 }
+
+export async function findTourPriceOptions() {
+  const [rows] = await pool.query(
+    `SELECT DISTINCT price
+     FROM tours
+     WHERE status = 'active'
+     ORDER BY price`,
+  );
+  return rows.map((row) => Number(row.price));
+}

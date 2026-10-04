@@ -62,6 +62,13 @@ export const listTourRules = [
     .withMessage("Kiểu sắp xếp không hợp lệ."),
 ];
 
+export const suggestionRules = [
+  query("q")
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Từ khóa gợi ý phải có từ 2 đến 100 ký tự."),
+];
+
 export const tourSlugRules = [
   param("slug").matches(slugPattern).withMessage("Slug tour không hợp lệ."),
 ];

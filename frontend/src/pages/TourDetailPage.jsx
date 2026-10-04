@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, MapPin, Minus, Plus, ShieldCheck, Star, Users, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, MapPin, Minus, Plus, RefreshCw, ShieldCheck, Star, Users, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { DetailSkeleton } from "../components/LoadingStates";
 import TourCard from "../components/TourCard";
 import { toursApi } from "../lib/api";
 
@@ -26,6 +27,9 @@ export default function TourDetailPage() {
   const [departure, setDeparture] = useState("");
   const [notice, setNotice] = useState(false);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+  const [relatedScroll, setRelatedScroll] = useState({ atStart: true, atEnd: false });
+  const relatedCarouselRef = useRef(null);
   const images = tour
     ? (tour.images?.length ? tour.images : [{ image_url: tour.cover_image, alt_text: tour.name }])
     : [];
@@ -33,10 +37,15 @@ export default function TourDetailPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
     setTour(null);
+    setError("");
     toursApi.getTour(slug)
       .then((data) => { setTour(data); setDeparture(data.departures[0]?.id ? String(data.departures[0].id) : ""); })
       .catch((err) => setError(err.message));
-  }, [slug]);
+  }, [slug, reloadKey]);
+
+  useEffect(() => {
+    document.title = tour ? `${tour.name} | BookTours` : "Đang tải tour | BookTours";
+  }, [tour]);
 
   useEffect(() => {
     if (activeImage === null) return undefined;
@@ -55,8 +64,23 @@ export default function TourDetailPage() {
     setTimeout(() => setNotice(false), 3000);
   }
 
-  if (error) return <div className="container error-state detail-error"><h2>Không tìm thấy hành trình</h2><p>{error}</p><Link className="button" to="/tours">Xem tour khác</Link></div>;
-  if (!tour) return <div className="page-loader detail-loader"><span /></div>;
+  function updateRelatedScroll() {
+    const element = relatedCarouselRef.current;
+    if (!element) return;
+    setRelatedScroll({
+      atStart: element.scrollLeft <= 2,
+      atEnd: element.scrollLeft + element.clientWidth >= element.scrollWidth - 2,
+    });
+  }
+
+  function scrollRelated(direction) {
+    const element = relatedCarouselRef.current;
+    if (!element) return;
+    element.scrollBy({ left: direction * element.clientWidth, behavior: "smooth" });
+  }
+
+  if (error) return <div className="container error-state detail-error"><h2>Không thể tải hành trình</h2><p>{error}</p><div className="error-actions"><button className="button" onClick={() => setReloadKey((value) => value + 1)}><RefreshCw size={17} /> Thử lại</button><Link className="secondary-button" to="/tours">Xem tour khác</Link></div></div>;
+  if (!tour) return <DetailSkeleton />;
 
   const included = asArray(tour.included);
   const excluded = asArray(tour.excluded);
@@ -111,18 +135,38 @@ export default function TourDetailPage() {
         </aside>
       </div>
 
-      {tour.related?.length > 0 && <section className="section related-section"><div className="container"><div className="section-heading"><div><span className="eyebrow">Có thể bạn sẽ thích</span><h2>Hành trình liên quan</h2></div></div><div className="tour-grid">{tour.related.map((item) => <TourCard key={item.id} tour={item} />)}</div></div></section>}
+      {tour.related?.length > 0 && (
+        <section className="section related-section">
+          <div className="container">
+            <div className="section-heading related-heading">
+              <div><span className="eyebrow">Có thể bạn sẽ thích</span><h2>Hành trình liên quan</h2></div>
+              {tour.related.length > 3 && <div className="related-controls">
+                <button disabled={relatedScroll.atStart} onClick={() => scrollRelated(-1)} aria-label="Xem các tour trước"><ChevronLeft /></button>
+                <button disabled={relatedScroll.atEnd} onClick={() => scrollRelated(1)} aria-label="Xem các tour tiếp theo"><ChevronRight /></button>
+              </div>}
+            </div>
+            <div className="related-carousel" ref={relatedCarouselRef} onScroll={updateRelatedScroll}>
+              {tour.related.map((item) => <TourCard key={item.id} tour={item} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {activeImage !== null && (
-        <div className="lightbox" onClick={() => setActiveImage(null)} role="presentation">
+        <div className="lightbox" onClick={() => setActiveImage(null)} role="dialog" aria-modal="true" aria-label={`Thư viện ảnh ${tour.name}`}>
           <button className="lightbox-close" aria-label="Đóng" onClick={() => setActiveImage(null)}><X /></button>
           {images.length > 1 && <button className="lightbox-nav lightbox-prev" aria-label="Ảnh trước" onClick={(event) => { event.stopPropagation(); setActiveImage((activeImage - 1 + images.length) % images.length); }}><ChevronLeft /></button>}
           <img src={images[activeImage].image_url} alt={images[activeImage].alt_text || tour.name} onClick={(event) => event.stopPropagation()} onError={useFallbackImage} />
           {images.length > 1 && <button className="lightbox-nav lightbox-next" aria-label="Ảnh sau" onClick={(event) => { event.stopPropagation(); setActiveImage((activeImage + 1) % images.length); }}><ChevronRight /></button>}
           <span className="lightbox-counter">{activeImage + 1} / {images.length}</span>
+          {images.length > 1 && <div className="lightbox-thumbnails" onClick={(event) => event.stopPropagation()}>{images.map((image, index) => <button className={index === activeImage ? "active" : ""} key={image.id || index} onClick={() => setActiveImage(index)} aria-label={`Xem ảnh ${index + 1}`}><img src={image.image_url} alt="" onError={useFallbackImage} /></button>)}</div>}
         </div>
       )}
-      {notice && <div className="toast"><Check /> Đã lưu tour. Trang thanh toán sẽ hoàn thiện ở A.6.</div>}
+      <div className="mobile-booking-bar">
+        <div><small>Giá từ</small><strong>{money.format(tour.price)}</strong></div>
+        <button className="button" disabled={!departure} onClick={bookNow}>Đặt ngay</button>
+      </div>
+      {notice && <div className="toast"><Check /> Đã lưu tour và ngày khởi hành bạn chọn.</div>}
     </>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock3, Headphones, MapPin, Search, ShieldCheck, Sparkles, X } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock3, Headphones, MapPin, Pause, Play, RefreshCw, Search, ShieldCheck, Sparkles, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { TourGridSkeleton } from "../components/LoadingStates";
 import TourCard from "../components/TourCard";
 import { toursApi } from "../lib/api";
 
@@ -24,25 +25,35 @@ export default function HomePage() {
   const [data, setData] = useState(null);
   const [filters, setFilters] = useState({ destinations: [], departures: [] });
   const [slide, setSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [showPromo, setShowPromo] = useState(() => !sessionStorage.getItem("promoSeen"));
   const [search, setSearch] = useState({ destination: "", departure: "", startDate: "", duration: "" });
 
   useEffect(() => {
+    document.title = "BookTours | Đi để cảm nhận";
+    setError("");
     Promise.all([toursApi.getHome(), toursApi.getFilters()])
       .then(([home, filterData]) => { setData(home); setFilters(filterData); })
       .catch((err) => setError(err.message));
-  }, []);
+  }, [reloadKey]);
 
   useEffect(() => {
-    if (!data?.banners?.length) return undefined;
+    if (!data?.banners?.length || isPaused || isHovering) return undefined;
     data.banners.forEach((banner) => {
       const image = new Image();
       image.src = banner.image_url;
     });
     const timer = setInterval(() => setSlide((current) => (current + 1) % data.banners.length), 6000);
     return () => clearInterval(timer);
-  }, [data]);
+  }, [data, isPaused, isHovering]);
+
+  function retryLoading() {
+    setData(null);
+    setReloadKey((value) => value + 1);
+  }
 
   function closePromo() {
     sessionStorage.setItem("promoSeen", "1");
@@ -68,7 +79,7 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="hero">
+      <section className="hero" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
         <div className="hero-slides" aria-hidden="true">
           {(banners.length ? banners : [{ id: "fallback", image_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=85" }]).map((banner, index) => (
             <div
@@ -88,6 +99,19 @@ export default function HomePage() {
           <div className="slider-controls">
             <button onClick={() => setSlide((slide - 1 + banners.length) % banners.length)} aria-label="Banner trước"><ChevronLeft /></button>
             <span>{String(slide + 1).padStart(2, "0")} / {String(banners.length).padStart(2, "0")}</span>
+            <div className="slider-dots">
+              {banners.map((banner, index) => (
+                <button
+                  className={index === slide ? "active" : ""}
+                  key={banner.id}
+                  onClick={() => setSlide(index)}
+                  aria-label={`Xem banner ${index + 1}`}
+                />
+              ))}
+            </div>
+            <button className="slider-pause" onClick={() => setIsPaused((value) => !value)} aria-label={isPaused ? "Tiếp tục trình chiếu" : "Tạm dừng trình chiếu"}>
+              {isPaused ? <Play /> : <Pause />}
+            </button>
             <button onClick={() => setSlide((slide + 1) % banners.length)} aria-label="Banner sau"><ChevronRight /></button>
           </div>
         )}
@@ -103,7 +127,9 @@ export default function HomePage() {
         </form>
       </div>
 
-      {error ? <div className="container error-state"><h2>Chưa tải được dữ liệu</h2><p>{error} Hãy kiểm tra backend và MySQL.</p></div> : !data ? <div className="page-loader"><span /></div> : (
+      {error ? <div className="container error-state"><h2>Chưa tải được dữ liệu</h2><p>{error} Hãy kiểm tra backend và MySQL.</p><button className="button" onClick={retryLoading}><RefreshCw size={17} /> Thử lại</button></div> : !data ? (
+        <section className="section"><div className="container"><div className="section-heading"><div><span className="eyebrow">Đang chuẩn bị hành trình</span><h2>Tour dành cho bạn</h2></div></div><TourGridSkeleton /></div></section>
+      ) : (
         <>
           <TourSection eyebrow="Được yêu thích nhất" title="Tour nổi bật" tours={data.sections.hot} link="/tours?sort=newest" />
           <TourSection eyebrow="Đi trọn Việt Nam" title="Khám phá trong nước" tours={data.sections.domestic} link="/tours?region=domestic" />

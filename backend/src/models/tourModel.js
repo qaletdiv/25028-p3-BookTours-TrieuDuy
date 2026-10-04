@@ -3,7 +3,7 @@ import { pool } from "../config/db.js";
 const TOUR_CARD_SELECT = `
   SELECT t.id, t.code, t.slug, t.name, t.summary, t.route, t.duration_days,
     t.duration_nights, t.price, t.original_price, t.cover_image, t.is_hot,
-    t.rating, t.review_count,
+    t.rating, t.review_count, t.region,
     d.name AS destination, d.slug AS destination_slug,
     dp.name AS departure, tt.name AS tour_type
   FROM tours t
@@ -38,9 +38,10 @@ function buildTourFilters(filters) {
   });
 
   if (filters.keyword) {
-    conditions.push("(t.name LIKE ? OR t.route LIKE ? OR d.name LIKE ?)");
+    conditions.push("(t.name LIKE ? OR t.code LIKE ? OR t.route LIKE ? OR t.slug LIKE ?)");
     const keyword = `%${filters.keyword}%`;
-    params.push(keyword, keyword, keyword);
+    const slugKeyword = `%${filters.keyword.trim().toLowerCase().replace(/\s+/g, "-")}%`;
+    params.push(keyword, keyword, keyword, slugKeyword);
   }
   if (filters.minPrice !== undefined) {
     conditions.push("t.price >= ?");
@@ -112,11 +113,37 @@ export async function findTours(filters, pagination) {
   };
 }
 
+export async function findTourSuggestions(keyword, limit = 6) {
+  const contains = `%${keyword}%`;
+  const startsWith = `${keyword}%`;
+  const slugContains = `%${keyword.toLowerCase().replace(/\s+/g, "-")}%`;
+  const [rows] = await pool.query(
+    `SELECT t.id, t.name, t.slug, t.cover_image, t.price,
+      d.name AS destination
+     FROM tours t
+     JOIN destinations d ON d.id = t.destination_id
+     WHERE t.status = 'active'
+       AND (t.name LIKE ? OR t.code LIKE ? OR t.route LIKE ? OR t.slug LIKE ?)
+     ORDER BY
+       CASE
+         WHEN t.name LIKE ? THEN 0
+         WHEN t.code LIKE ? THEN 1
+         ELSE 2
+       END,
+       t.is_hot DESC,
+       t.name
+     LIMIT ?`,
+    [contains, contains, contains, slugContains, startsWith, startsWith, limit],
+  );
+  return rows;
+}
+
 export async function findTourBySlug(slug) {
   const [rows] = await pool.query(
     `SELECT t.id, t.destination_id, t.departure_id, t.tour_type_id,
       t.code, t.slug, t.name, t.summary, t.route, t.duration_days,
       t.duration_nights, t.price, t.original_price, t.cover_image, t.is_hot,
+      t.region,
       t.description, t.highlights, t.included, t.excluded, t.policy,
       t.video_url, t.rating, t.review_count,
       d.name AS destination, d.slug AS destination_slug,
@@ -159,15 +186,20 @@ export async function findTourItinerary(tourId) {
   return rows;
 }
 
-export async function findRelatedTours(tour, limit = 4) {
+export async function findRelatedTours(tour, limit = 6) {
   const [rows] = await pool.query(
     `${TOUR_CARD_SELECT}
      WHERE t.status = 'active'
        AND t.id <> ?
-       AND (t.destination_id = ? OR t.tour_type_id = ?)
-     ORDER BY (t.destination_id = ?) DESC, t.is_hot DESC
+       AND t.region = ?
+     ORDER BY
+       (t.destination_id = ?) DESC,
+       (t.tour_type_id = ?) DESC,
+       t.is_hot DESC,
+       t.featured_order,
+       t.id DESC
      LIMIT ?`,
-    [tour.id, tour.destination_id, tour.tour_type_id, tour.destination_id, limit],
+    [tour.id, tour.region, tour.destination_id, tour.tour_type_id, limit],
   );
   return rows;
 }

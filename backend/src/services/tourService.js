@@ -2,6 +2,7 @@ import {
   findActiveBanners,
   findDepartures,
   findDestinations,
+  findTourPriceOptions,
   findTourTypes,
 } from "../models/catalogModel.js";
 import {
@@ -11,6 +12,7 @@ import {
   findTourDepartures,
   findTourImages,
   findTourItinerary,
+  findTourSuggestions,
   findTours,
   findToursByRegion,
 } from "../models/tourModel.js";
@@ -64,12 +66,13 @@ export async function getHomeData() {
 }
 
 export async function getTourFilters() {
-  const [destinations, departures, types] = await Promise.all([
+  const [destinations, departures, types, prices] = await Promise.all([
     findDestinations(),
     findDepartures(),
     findTourTypes(),
+    findTourPriceOptions(),
   ]);
-  return { destinations, departures, types };
+  return { destinations, departures, types, prices };
 }
 
 export async function getTours(query) {
@@ -104,6 +107,15 @@ export async function getTours(query) {
       totalPages: Math.ceil(total / limit),
     },
   };
+}
+
+export async function getTourSuggestions(keyword) {
+  const normalizedKeyword = keyword.trim();
+  const rows = await findTourSuggestions(normalizedKeyword);
+  return rows.map((tour) => ({
+    ...tour,
+    price: Number(tour.price),
+  }));
 }
 
 export async function getTourDetail(slug) {

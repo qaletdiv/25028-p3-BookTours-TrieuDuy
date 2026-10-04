@@ -2,6 +2,7 @@ import {
   getHomeData,
   getTourDetail,
   getTourFilters,
+  getTourSuggestions,
   getTours,
 } from "../services/tourService.js";
 
@@ -24,6 +25,14 @@ export async function showFilters(_req, res, next) {
 export async function index(req, res, next) {
   try {
     res.json(await getTours(req.query));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function suggestions(req, res, next) {
+  try {
+    res.json({ data: await getTourSuggestions(req.query.q) });
   } catch (error) {
     next(error);
   }
