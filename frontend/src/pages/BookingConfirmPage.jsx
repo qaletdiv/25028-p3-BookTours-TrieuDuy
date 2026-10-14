@@ -49,6 +49,13 @@ export default function BookingConfirmPage() {
             <strong>{money.format(booking.totalPrice)}</strong>
           </div>
         </div>
+        <h3>Người liên hệ</h3>
+        <ul className="passenger-confirm">
+          <li>Họ tên<span>{booking.contactName}</span></li>
+          <li>Số điện thoại<span>{booking.contactPhone}</span></li>
+          <li>Email<span>{booking.contactEmail}</span></li>
+          <li>Địa chỉ<span>{booking.contactAddress}</span></li>
+        </ul>
         <h3>Hành khách</h3>
         <ul className="passenger-confirm">
           {booking.passengers.map((passenger, index) => (

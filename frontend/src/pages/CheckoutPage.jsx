@@ -85,7 +85,8 @@ export default function CheckoutPage() {
   const childPrice = Math.round(adultPrice * CHILD_RATE);
   const total = adultPrice * adults + childPrice * children;
   const slots = departure?.available_slots ?? 0;
-  const tooManyGuests = adults + children > slots;
+  const hasDepartures = Boolean(tour?.departures.length);
+  const tooManyGuests = Boolean(departure) && adults + children > slots;
 
   function changeCounts(nextAdults, nextChildren) {
     const safeAdults = Math.max(1, nextAdults);
@@ -189,16 +190,20 @@ export default function CheckoutPage() {
 
           <section className="checkout-card">
             <h2>Hành khách</h2>
-            <label>
-              <span><CalendarDays size={16} /> Ngày khởi hành</span>
-              <select value={departureId} onChange={(event) => setDepartureId(event.target.value)}>
-                {tour.departures.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {dateFormat.format(new Date(`${item.start_date}T00:00:00`))} — còn {item.available_slots} chỗ
-                  </option>
-                ))}
-              </select>
-            </label>
+            {hasDepartures ? (
+              <label>
+                <span><CalendarDays size={16} /> Ngày khởi hành</span>
+                <select value={departureId} onChange={(event) => setDepartureId(event.target.value)}>
+                  {tour.departures.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {dateFormat.format(new Date(`${item.start_date}T00:00:00`))} — còn {item.available_slots} chỗ
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <p className="form-banner">Tour này hiện không còn ngày khởi hành mở bán.</p>
+            )}
             <div className="counter-row">
               <div>
                 <strong>Người lớn</strong>
@@ -289,6 +294,8 @@ export default function CheckoutPage() {
           <h2>{tour.name}</h2>
           <p>{tour.route}</p>
           <div className="booking-summary">
+            <span>Khởi hành<strong>{departure ? dateFormat.format(new Date(`${departure.start_date}T00:00:00`)) : "Chưa có lịch"}</strong></span>
+            <span>Chỗ còn nhận<strong>{departure ? `${slots} chỗ` : "Hết chỗ"}</strong></span>
             <span>Người lớn<strong>{adults} x {money.format(adultPrice)}</strong></span>
             <span>Trẻ em<strong>{children} x {money.format(childPrice)}</strong></span>
             <span>Tổng tiền<strong>{money.format(total)}</strong></span>

@@ -474,5 +474,5 @@ h1, h2 { color: var(--ink-dark); font-family: "Playfair Display", serif; line-he
 .confirm-summary strong { color: var(--coral); font-size: 20px; }
 .confirm-card h3 { margin: 8px 0 12px; font-family: Manrope, sans-serif; font-size: 16px; text-align: left; }
 .passenger-confirm { margin: 0 0 24px; padding: 0; list-style: none; text-align: left; }
-.passenger-confirm li { display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--line); font-weight: 700; }
-.passenger-confirm span { color: var(--muted); font-weight: 600; }
+.passenger-confirm li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-top: 1px solid var(--line); font-weight: 700; }
+.passenger-confirm span { max-width: 68%; color: var(--muted); font-weight: 600; text-align: right; }
