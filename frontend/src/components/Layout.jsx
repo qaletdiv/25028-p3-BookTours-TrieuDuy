@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Facebook, Instagram, Mail, MapPin, Menu, Phone, X } from "lucide-react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { label: "Trang chủ", to: "/" },
@@ -12,6 +13,8 @@ const navItems = [
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   function isNavActive(to) {
     if (to === "/") return location.pathname === "/";
@@ -47,8 +50,27 @@ export default function Layout() {
               </Link>
             ))}
             <div className="auth-actions">
-              <Link className="login-link" to="/dang-nhap">Đăng nhập</Link>
-              <Link className="button button-sm" to="/dang-ky">Đăng ký</Link>
+              {user ? (
+                <>
+                  <span className="login-link">{user.fullName}</span>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      logout();
+                      navigate("/", { replace: true });
+                    }}
+                  >
+                    Đăng xuất
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link className="login-link" to="/dang-nhap" onClick={() => setMenuOpen(false)}>Đăng nhập</Link>
+                  <Link className="button button-sm" to="/dang-ky" onClick={() => setMenuOpen(false)}>Đăng ký</Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

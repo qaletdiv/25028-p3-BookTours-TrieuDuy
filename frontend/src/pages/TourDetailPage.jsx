@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, MapPin, Minus, Plus, RefreshCw, ShieldCheck, Star, Users, X } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { DetailSkeleton } from "../components/LoadingStates";
 import TourCard from "../components/TourCard";
+import { useAuth } from "../context/AuthContext";
+import { saveCart } from "../lib/cart";
 import { toursApi } from "../lib/api";
 
 const money = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
@@ -21,11 +23,12 @@ function useFallbackImage(event) {
 
 export default function TourDetailPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const { user, ready } = useAuth();
   const [tour, setTour] = useState(null);
   const [activeTab, setActiveTab] = useState("itinerary");
   const [activeImage, setActiveImage] = useState(null);
   const [departure, setDeparture] = useState("");
-  const [notice, setNotice] = useState(false);
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [relatedScroll, setRelatedScroll] = useState({ atStart: true, atEnd: false });
@@ -59,9 +62,13 @@ export default function TourDetailPage() {
   }, [activeImage, images.length]);
 
   function bookNow() {
-    sessionStorage.setItem("selectedTour", JSON.stringify({ id: tour.id, slug: tour.slug, departureId: departure }));
-    setNotice(true);
-    setTimeout(() => setNotice(false), 3000);
+    if (!tour || !departure || !ready) return;
+    saveCart({ slug: tour.slug, departureId: departure });
+    if (!user) {
+      navigate("/dang-nhap?next=/thanh-toan");
+      return;
+    }
+    navigate("/thanh-toan");
   }
 
   function updateRelatedScroll() {
@@ -129,7 +136,7 @@ export default function TourDetailPage() {
           <span className="eyebrow">Đặt chỗ ngay</span><h2>Chọn ngày khởi hành</h2>
           <label><CalendarDays /><select value={departure} onChange={(e) => setDeparture(e.target.value)}>{tour.departures.map((item) => <option key={item.id} value={item.id}>{date.format(new Date(`${item.start_date}T00:00:00`))} — còn {item.available_slots} chỗ</option>)}</select></label>
           <div className="booking-summary"><span>Giá tour / khách<strong>{money.format(tour.price)}</strong></span><span>Thời lượng<strong>{tour.duration_days}N{tour.duration_nights}Đ</strong></span></div>
-          <button className="button book-button" disabled={!departure} onClick={bookNow}>Đặt ngay</button>
+          <button className="button book-button" disabled={!departure || !ready} onClick={bookNow}>Đặt ngay</button>
           <p><ShieldCheck size={17} /> Thông tin của bạn được bảo mật an toàn</p>
           <a className="hotline" href="tel:1900636832">Cần tư vấn? <strong>1900 636 832</strong></a>
         </aside>
@@ -164,9 +171,8 @@ export default function TourDetailPage() {
       )}
       <div className="mobile-booking-bar">
         <div><small>Giá từ</small><strong>{money.format(tour.price)}</strong></div>
-        <button className="button" disabled={!departure} onClick={bookNow}>Đặt ngay</button>
+        <button className="button" disabled={!departure || !ready} onClick={bookNow}>Đặt ngay</button>
       </div>
-      {notice && <div className="toast"><Check /> Đã lưu tour và ngày khởi hành bạn chọn.</div>}
     </>
   );
 }

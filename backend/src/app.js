@@ -4,6 +4,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import errorHandler from "./middlewares/errorHandler.js";
 import notFoundHandler from "./middlewares/notFoundHandler.js";
+import authRouter from "./routes/auth.js";
+import bookingsRouter from "./routes/bookings.js";
 import toursRouter from "./routes/tours.js";
 
 const app = express();
@@ -22,6 +24,8 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", message: "BookTours API đang hoạt động." });
 });
 app.use("/api/tours", toursRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/bookings", bookingsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
