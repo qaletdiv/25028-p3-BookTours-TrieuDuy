@@ -52,7 +52,7 @@ export default function Layout() {
             <div className="auth-actions">
               {user ? (
                 <>
-                  <span className="login-link">{user.fullName}</span>
+                  <Link className={location.pathname === "/tai-khoan" ? "login-link active" : "login-link"} to="/tai-khoan" onClick={() => setMenuOpen(false)}>{user.fullName}</Link>
                   <button
                     className="text-button"
                     type="button"

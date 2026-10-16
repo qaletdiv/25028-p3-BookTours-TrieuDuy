@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const protectedPath = location.pathname === "/thanh-toan" || location.pathname.startsWith("/xac-nhan/");
+    const protectedPath = ["/thanh-toan", "/tai-khoan"].includes(location.pathname) || location.pathname.startsWith("/xac-nhan/");
     if (!protectedPath) loggingOut.current = false;
   }, [location]);
 

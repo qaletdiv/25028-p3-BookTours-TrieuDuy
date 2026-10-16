@@ -49,6 +49,7 @@ h1, h2 { color: var(--ink-dark); font-family: "Playfair Display", serif; line-he
 .nav > a.active::after { position: absolute; right: 0; bottom: -27px; left: 0; height: 2px; background: var(--coral); content: ""; }
 .auth-actions { display: flex; align-items: center; gap: 15px; margin-left: 6px; padding-left: 22px; border-left: 1px solid var(--line); }
 .login-link { font-size: 14px; font-weight: 700; }
+.login-link.active { color: var(--teal); }
 .menu-button { display: none; border: 0; color: var(--ink-dark); background: transparent; }
 
 .hero { position: relative; display: flex; overflow: hidden; min-height: 600px; align-items: center; color: #fff; background: var(--ink-dark); }
@@ -421,7 +422,9 @@ h1, h2 { color: var(--ink-dark); font-family: "Playfair Display", serif; line-he
   .lightbox-thumbnails { right: 16px; left: 16px; }
   .skeleton-title { width: 86%; height: 38px; }
   .skeleton-detail-image { height: 300px; }
-  .error-actions { flex-direction: column; }
+  .error-actions, .confirm-actions { flex-direction: column; }
+  .history-card { grid-template-columns: 72px 1fr; }
+  .history-card > strong { grid-column: 2; }
   .checkout-layout, .form-grid, .confirm-summary { grid-template-columns: 1fr; }
   .checkout-summary { position: static; }
 }
@@ -476,3 +479,20 @@ h1, h2 { color: var(--ink-dark); font-family: "Playfair Display", serif; line-he
 .passenger-confirm { margin: 0 0 24px; padding: 0; list-style: none; text-align: left; }
 .passenger-confirm li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-top: 1px solid var(--line); font-weight: 700; }
 .passenger-confirm span { max-width: 68%; color: var(--muted); font-weight: 600; text-align: right; }
+.confirm-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.account-layout { display: grid; gap: 18px; padding-top: 36px; padding-bottom: 80px; }
+.account-profile p { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+.account-profile p:first-of-type { border-top: 0; }
+.account-profile svg { flex: none; margin-top: 3px; color: var(--teal); }
+.account-profile span { min-width: 110px; }
+.account-profile strong { flex: 1; min-width: 0; color: var(--ink); }
+.account-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.account-heading span { color: var(--muted); font-size: 13px; font-weight: 700; }
+.account-state { padding: 36px 10px; }
+.booking-history { display: grid; gap: 12px; }
+.history-card { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; }
+.history-card:hover { border-color: var(--teal); }
+.history-card img { width: 100%; height: 72px; border-radius: 10px; object-fit: cover; }
+.history-card h3 { margin: 0 0 4px; font-family: Manrope, sans-serif; font-size: 16px; }
+.history-card p { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--muted); font-size: 13px; }
+.history-card > strong { color: var(--coral); font-size: 16px; }

@@ -21,7 +21,10 @@ export default function BookingConfirmPage() {
       <div className="container error-state">
         <h2>Không tìm thấy booking</h2>
         <p>{error}</p>
-        <Link className="button" to="/tours">Tiếp tục xem tour</Link>
+        <div className="error-actions">
+          <button className="button" type="button" onClick={() => window.location.reload()}>Thử lại</button>
+          <Link className="secondary-button" to="/tours">Tiếp tục xem tour</Link>
+        </div>
       </div>
     );
   }
@@ -43,8 +46,8 @@ export default function BookingConfirmPage() {
             <span className="tour-code">{booking.tourCode}</span>
             <h2>{booking.tourName}</h2>
             <p>{booking.route}</p>
-            <p>Khởi hành {dateFormat.format(new Date(`${booking.startDate}T00:00:00`))}</p>
-            <p>{booking.adults} người lớn{booking.children ? `, ${booking.children} trẻ em` : ""}</p>
+            <p>Khởi hành {dateFormat.format(new Date(`${booking.startDate}T00:00:00`))} – {dateFormat.format(new Date(`${booking.endDate}T00:00:00`))}</p>
+            <p>{booking.adults} người lớn × {money.format(booking.adultPrice)}{booking.children ? `, ${booking.children} trẻ em × ${money.format(booking.childPrice)}` : ""}</p>
             <p>{booking.paymentMethod === "credit_card" ? <><CreditCard size={16} /> Thẻ tín dụng (mô phỏng)</> : <><Landmark size={16} /> Chuyển khoản ngân hàng</>}</p>
             <strong>{money.format(booking.totalPrice)}</strong>
           </div>
@@ -65,7 +68,10 @@ export default function BookingConfirmPage() {
             </li>
           ))}
         </ul>
-        <Link className="button" to="/tours">Tiếp tục xem tour</Link>
+        <div className="confirm-actions">
+          <Link className="button" to="/tours">Tiếp tục xem tour</Link>
+          <Link className="secondary-button" to="/tai-khoan">Tài khoản của tôi</Link>
+        </div>
       </div>
     </section>
   );

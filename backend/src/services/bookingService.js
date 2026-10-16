@@ -1,6 +1,7 @@
 import { pool } from "../config/db.js";
 import {
   findBookingByCode,
+  findBookingsByUser,
   findDepartureForBooking,
   insertBooking,
   reserveDepartureSlots,
@@ -120,6 +121,19 @@ export async function createBooking(userId, payload) {
   } finally {
     connection.release();
   }
+}
+
+export async function getMyBookings(userId) {
+  const rows = await findBookingsByUser(userId);
+  return rows.map((row) => ({
+    code: row.code,
+    tourName: row.tour_name,
+    tourSlug: row.tour_slug,
+    coverImage: row.cover_image,
+    startDate: row.start_date,
+    totalPrice: Number(row.total_price),
+    createdAt: row.created_at,
+  }));
 }
 
 export async function getBooking(code, userId) {

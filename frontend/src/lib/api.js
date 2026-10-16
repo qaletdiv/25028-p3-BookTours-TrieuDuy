@@ -50,5 +50,6 @@ export const authApi = {
 
 export const bookingsApi = {
   create: (payload) => request("/bookings", { method: "POST", body: payload }),
+  list: () => request("/bookings"),
   get: (code) => request(`/bookings/${code}`),
 };

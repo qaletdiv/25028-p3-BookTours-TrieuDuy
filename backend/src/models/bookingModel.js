@@ -50,6 +50,21 @@ export async function insertBooking(connection, booking) {
   return result.insertId;
 }
 
+export async function findBookingsByUser(userId) {
+  const [rows] = await pool.query(
+    `SELECT b.code, b.total_price, b.created_at,
+      t.name AS tour_name, t.slug AS tour_slug, t.cover_image,
+      td.start_date
+     FROM bookings b
+     JOIN tours t ON t.id = b.tour_id
+     JOIN tour_departures td ON td.id = b.departure_id
+     WHERE b.user_id = ?
+     ORDER BY b.created_at DESC, b.id DESC`,
+    [userId],
+  );
+  return rows;
+}
+
 export async function findBookingByCode(code, userId) {
   const [rows] = await pool.query(
     `SELECT b.code, b.contact_name, b.contact_phone, b.contact_email, b.contact_address,
