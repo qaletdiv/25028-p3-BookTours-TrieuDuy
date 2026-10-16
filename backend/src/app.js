@@ -15,7 +15,25 @@ const app = express();
 const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../frontend/dist");
 const frontendUrl = process.env.FRONTEND_URL || process.env.RENDER_EXTERNAL_URL || "http://localhost:5173";
 
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      "default-src": ["'self'"],
+      "base-uri": ["'self'"],
+      "font-src": ["'self'", "https:", "data:"],
+      "form-action": ["'self'"],
+      "frame-ancestors": ["'self'"],
+      "img-src": ["'self'", "data:", "https://images.unsplash.com"],
+      "object-src": ["'none'"],
+      "script-src": ["'self'"],
+      "script-src-attr": ["'none'"],
+      "style-src": ["'self'", "https:", "'unsafe-inline'"],
+      "upgrade-insecure-requests": [],
+    },
+  },
+}));
 app.use(
   cors({
     origin: frontendUrl,
