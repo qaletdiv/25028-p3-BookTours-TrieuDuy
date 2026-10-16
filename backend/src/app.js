@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -9,11 +12,13 @@ import bookingsRouter from "./routes/bookings.js";
 import toursRouter from "./routes/tours.js";
 
 const app = express();
+const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../frontend/dist");
+const frontendUrl = process.env.FRONTEND_URL || process.env.RENDER_EXTERNAL_URL || "http://localhost:5173";
 
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: frontendUrl,
     credentials: true,
   }),
 );
@@ -26,6 +31,13 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/tours", toursRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/bookings", bookingsRouter);
+
+if (fs.existsSync(path.join(distDir, "index.html"))) {
+  app.use(express.static(distDir));
+  app.get(/^(?!\/api).*/, (_req, res) => {
+    res.sendFile(path.join(distDir, "index.html"));
+  });
+}
 
 app.use(notFoundHandler);
 app.use(errorHandler);
